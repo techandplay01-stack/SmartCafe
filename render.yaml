@@ -1,7 +1,7 @@
 services:
   - type: static
     name: SmartCafe
-    buildCommand: npm install --prefix SmartCafe && npm run build --prefix SmartCafe
+    buildCommand: npm install && npm install --prefix SmartCafe && npm run build --prefix SmartCafe
     staticPublishPath: ./SmartCafe/build
     routes:
       - type: rewrite
