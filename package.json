@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "build": "npm install --prefix SmartCafe && npm run build --prefix SmartCafe && cp -r SmartCafe/build build",
-    "start": "serve -s build"
+    "build": "npm install --prefix SmartCafe && npm run build --prefix SmartCafe",
+    "start": "serve -s SmartCafe/build -l ${PORT:-3000}"
   },
   "dependencies": {
     "serve": "^14.2.4"
