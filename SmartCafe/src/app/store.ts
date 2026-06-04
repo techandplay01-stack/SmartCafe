@@ -316,6 +316,9 @@ export const useStore = create<CafeState>()((set, get) => ({
       }),
     });
     const data = await res.json();
+    if (!res.ok || data.error) {
+      throw new Error(data.error || `HTTP error! status: ${res.status}`);
+    }
     await get().fetchOrders();
     return data.orderId;
   },

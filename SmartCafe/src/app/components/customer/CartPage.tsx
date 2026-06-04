@@ -79,7 +79,7 @@ export function CartPage() {
     }
   };
 
-  const placeOrderHandler = () => {
+  const placeOrderHandler = async () => {
     // Check if cash payment and verification required
     if (paymentMethod === "cash" && !otpVerified) {
       alert("Please verify your mobile number first");
@@ -89,26 +89,41 @@ export function CartPage() {
     const table = tables.find(t => t.number === tableNumber);
     const finalCustomerName = paymentMethod === "cash" ? customerName : (table?.customerName || "Guest");
 
-    const orderId = placeOrder({
+    console.log("Placing order...", {
       tableNumber: tableNumber || "0",
       customerName: finalCustomerName,
-      items: cartItems as any,
+      items: cartItems,
       total,
       paymentMethod,
-      customerMobile: paymentMethod === "cash" ? mobileNumber : undefined,
-      paymentCompleted: paymentMethod === "razorpay", // Online payment is completed immediately
     });
 
-    navigate("/order-tracking", {
-      state: {
-        orderId,
-        items: cartItems,
+    try {
+      const orderId = await placeOrder({
+        tableNumber: tableNumber || "0",
+        customerName: finalCustomerName,
+        items: cartItems as any,
         total,
         paymentMethod,
-        tableNumber,
         customerMobile: paymentMethod === "cash" ? mobileNumber : undefined,
-      },
-    });
+        paymentCompleted: paymentMethod === "razorpay", // Online payment is completed immediately
+      });
+
+      console.log("Order placed successfully! Order ID:", orderId);
+
+      navigate("/order-tracking", {
+        state: {
+          orderId,
+          items: cartItems,
+          total,
+          paymentMethod,
+          tableNumber,
+          customerMobile: paymentMethod === "cash" ? mobileNumber : undefined,
+        },
+      });
+    } catch (err) {
+      console.error("Failed to place order:", err);
+      alert("Failed to place order: " + (err instanceof Error ? err.message : String(err)));
+    }
   };
 
   if (cartItems.length === 0) {
