@@ -57,14 +57,9 @@ export function MainLogin() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    const isAdminRole = selectedRole === "admin" || selectedRole === "qr";
-    
-    let isAuthorized = false;
-    if (isAdminRole) {
-      isAuthorized = username === "SmartCafe" && password === "SmartCafe@2026";
-    } else {
-      isAuthorized = username === "admin" && password === "staff2024";
-    }
+
+    // All roles use the same credentials
+    const isAuthorized = username === "admin" && password === "SmartCafe@2026";
 
     if (isAuthorized) {
       if (selectedRole === "qr") {
@@ -202,11 +197,6 @@ export function MainLogin() {
                       Invalid credentials. Please try again.
                     </motion.p>
                   )}
-                  <p className="text-xs text-muted-foreground mt-3 text-center">
-                    {selectedRole === "admin" || selectedRole === "qr"
-                      ? "Demo - Username: SmartCafe | Password: SmartCafe@2026"
-                      : "Demo - Username: admin | Password: staff2024"}
-                  </p>
                 </div>
 
                 <div className="space-y-3">
