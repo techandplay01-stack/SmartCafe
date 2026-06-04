@@ -51,7 +51,6 @@ export function MainLogin() {
   const navigate = useNavigate();
   const { login } = useStore();
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [pin, setPin] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
@@ -59,37 +58,31 @@ export function MainLogin() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     const isAdminRole = selectedRole === "admin" || selectedRole === "qr";
+    
+    let isAuthorized = false;
     if (isAdminRole) {
-      if (username === "SmartCafe" && password === "SmartCafe@2026") {
-        if (selectedRole === "qr") {
-          login("admin");
-          navigate("/admin", { state: { initialMenu: "tables" } });
-        } else {
-          login("admin");
-          navigate("/admin");
-        }
-      } else {
-        setError(true);
-        setTimeout(() => setError(false), 2000);
+      isAuthorized = username === "SmartCafe" && password === "SmartCafe@2026";
+    } else {
+      isAuthorized = username === "admin" && password === "staff2024";
+    }
+
+    if (isAuthorized) {
+      if (selectedRole === "qr") {
+        login("admin");
+        navigate("/admin", { state: { initialMenu: "tables" } });
+      } else if (selectedRole) {
+        login(selectedRole === "admin" ? "admin" : selectedRole as any);
+        const role = roles.find((r) => r.id === selectedRole);
+        navigate(role!.path);
       }
     } else {
-      if (pin === "1234") {
-        if (selectedRole) {
-          login(selectedRole as any);
-          const role = roles.find((r) => r.id === selectedRole);
-          navigate(role!.path);
-        }
-      } else {
-        setError(true);
-        setPin("");
-        setTimeout(() => setError(false), 2000);
-      }
+      setError(true);
+      setTimeout(() => setError(false), 2000);
     }
   };
 
   const handleBack = () => {
     setSelectedRole(null);
-    setPin("");
     setUsername("");
     setPassword("");
     setError(false);
@@ -140,7 +133,7 @@ export function MainLogin() {
             ))}
           </motion.div>
         ) : (
-          // PIN Entry
+          // Login Form
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -158,96 +151,68 @@ export function MainLogin() {
                 <h2 className="text-xl md:text-2xl font-bold text-coffee-brown mb-2">
                   {roles.find((r) => r.id === selectedRole)?.title}
                 </h2>
-                <p className="text-sm md:text-base text-muted-foreground">
-                  {selectedRole === "admin" || selectedRole === "qr"
-                    ? "Enter admin credentials to continue"
-                    : "Enter your PIN to continue"}
-                </p>
+                <p className="text-sm md:text-base text-muted-foreground">Enter credentials to continue</p>
               </div>
 
-              {/* Form */}
+              {/* Login Form */}
               <form onSubmit={handleLogin} className="space-y-4 md:space-y-6">
-                {selectedRole === "admin" || selectedRole === "qr" ? (
-                  // Admin Username/Password Form
-                  <div className="space-y-4">
-                    <div className="relative">
-                      <User className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 size-5 md:size-6 text-muted-foreground" />
-                      <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => { setUsername(e.target.value); setError(false); }}
-                        placeholder="Username"
-                        className={`w-full pl-12 md:pl-14 pr-4 py-4 md:py-5 glass bg-white/50 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-coffee-brown transition-all ${
-                          error ? "border-2 border-red-500 focus:ring-red-500 shake" : ""
-                        }`}
-                        required
-                        autoFocus
-                      />
-                    </div>
-                    <div className="relative">
-                      <KeyRound className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 size-5 md:size-6 text-muted-foreground" />
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => { setPassword(e.target.value); setError(false); }}
-                        placeholder="Password"
-                        className={`w-full pl-12 md:pl-14 pr-4 py-4 md:py-5 glass bg-white/50 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-coffee-brown transition-all ${
-                          error ? "border-2 border-red-500 focus:ring-red-500 shake" : ""
-                        }`}
-                        required
-                      />
-                    </div>
-                    {error && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-red-500 text-sm mt-3 text-center font-semibold"
-                      >
-                        Invalid Username or Password.
-                      </motion.p>
-                    )}
+                <div>
+                  <label className="block text-sm font-medium text-coffee-brown mb-2 text-left">
+                    Username
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 size-5 md:size-6 text-muted-foreground" />
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => { setUsername(e.target.value); setError(false); }}
+                      placeholder="Enter username"
+                      className={`w-full pl-12 md:pl-14 pr-4 py-3 md:py-4 glass bg-white/50 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 text-base md:text-lg font-medium transition-all ${
+                        error ? "border-2 border-red-500 focus:ring-red-500 shake" : "focus:ring-coffee-brown"
+                      }`}
+                      required
+                      autoFocus
+                    />
                   </div>
-                ) : (
-                  // Staff PIN Form
-                  <div>
-                    <div className="relative">
-                      <KeyRound className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 size-5 md:size-6 text-muted-foreground" />
-                      <input
-                        type="password"
-                        value={pin}
-                        onChange={(e) => { setPin(e.target.value); setError(false); }}
-                        placeholder="Enter 4-digit PIN"
-                        maxLength={4}
-                        className={`w-full pl-12 md:pl-14 pr-4 py-4 md:py-5 glass bg-white/50 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 text-center tracking-[0.5em] md:tracking-[1em] text-2xl md:text-3xl font-bold transition-all ${
-                          error ? "border-2 border-red-500 focus:ring-red-500 shake" : "focus:ring-coffee-brown"
-                        }`}
-                        required
-                        autoFocus
-                      />
-                    </div>
-                    {error && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-red-500 text-sm mt-3 text-center font-semibold"
-                      >
-                        Invalid PIN. Please use 1234.
-                      </motion.p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-3 text-center">
-                      Demo PIN: 1234
-                    </p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-coffee-brown mb-2 text-left">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <KeyRound className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 size-5 md:size-6 text-muted-foreground" />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => { setPassword(e.target.value); setError(false); }}
+                      placeholder="Enter password"
+                      className={`w-full pl-12 md:pl-14 pr-4 py-3 md:py-4 glass bg-white/50 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 text-base md:text-lg font-medium transition-all ${
+                        error ? "border-2 border-red-500 focus:ring-red-500 shake" : "focus:ring-coffee-brown"
+                      }`}
+                      required
+                    />
                   </div>
-                )}
+                  {error && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-500 text-sm mt-3 text-center font-semibold"
+                    >
+                      Invalid credentials. Please try again.
+                    </motion.p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-3 text-center">
+                    {selectedRole === "admin" || selectedRole === "qr"
+                      ? "Demo - Username: SmartCafe | Password: SmartCafe@2026"
+                      : "Demo - Username: admin | Password: staff2024"}
+                  </p>
+                </div>
 
                 <div className="space-y-3">
                   <button
                     type="submit"
-                    disabled={
-                      selectedRole === "admin" || selectedRole === "qr"
-                        ? !username || !password
-                        : pin.length !== 4
-                    }
+                    disabled={!username.trim() || !password.trim()}
                     className="w-full py-4 md:py-5 bg-coffee-brown text-white rounded-xl md:rounded-2xl font-bold text-base md:text-lg hover:bg-coffee-brown/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                   >
                     Login

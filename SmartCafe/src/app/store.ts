@@ -28,6 +28,7 @@ export interface Order {
   total: number;
   status: OrderStatus;
   createdAt: number;
+  preparingStartedAt?: number;
   paymentMethod?: "razorpay" | "cash";
   customerMobile?: string;
   paymentCompleted?: boolean;
@@ -70,7 +71,6 @@ interface CafeState {
   fetchTables: () => Promise<void>;
   fetchOrders: () => Promise<void>;
   fetchSettings: () => Promise<void>;
-  updateSettings: (settings: CafeSettings) => Promise<void>;
 
   // Menu Actions
   addMenuItem: (item: Omit<MenuItem, "id">) => Promise<void>;
@@ -88,6 +88,9 @@ interface CafeState {
   cancelOrder: (id: string) => Promise<void>;
   completePayment: (orderId: string, tableNumber: string) => Promise<void>;
 
+  // Settings Actions
+  updateSettings: (settings: CafeSettings) => Promise<void>;
+
   // Auth Actions
   login: (role: UserRole) => void;
   logout: () => void;
@@ -103,6 +106,7 @@ function mapOrder(row: any): Order {
     total: row.total,
     status: row.status,
     createdAt: new Date(row.created_at).getTime(),
+    preparingStartedAt: row.preparing_started_at ? new Date(row.preparing_started_at).getTime() : undefined,
     paymentMethod: row.payment_method,
     paymentCompleted: row.payment_completed,
     items: (row.order_items || []).map((oi: any) => ({
@@ -224,28 +228,6 @@ export const useStore = create<CafeState>()((set, get) => ({
     }
   },
 
-  updateSettings: async (newSettings) => {
-    try {
-      await fetch(`${API_BASE_URL}/api/settings`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cafe_name: newSettings.cafeName,
-          tax_rate: newSettings.taxRate,
-          currency: newSettings.currency,
-          enable_notifications: newSettings.enableNotifications,
-          enable_sounds: newSettings.enableSounds,
-          auto_accept_orders: newSettings.autoAcceptOrders,
-          max_tables_per_waiter: newSettings.maxTablesPerWaiter,
-          default_prep_time: newSettings.defaultPrepTime
-        })
-      });
-      set({ settings: newSettings });
-    } catch (err) {
-      console.error("updateSettings error:", err);
-    }
-  },
-
   // ─── Menu Actions ────────────────────────────────────────────────────────────
 
   addMenuItem: async (item) => {
@@ -330,6 +312,7 @@ export const useStore = create<CafeState>()((set, get) => ({
         total: orderData.total,
         items: orderData.items,
         paymentMethod: orderData.paymentMethod,
+        preparingStartedAt: new Date().toISOString()
       }),
     });
     const data = await res.json();
@@ -341,7 +324,10 @@ export const useStore = create<CafeState>()((set, get) => ({
     await fetch(`${API_BASE_URL}/api/orders/${id}/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({
+        status,
+        preparingStartedAt: status === "preparing" ? new Date().toISOString() : undefined
+      }),
     });
     await get().fetchOrders();
   },
@@ -359,6 +345,30 @@ export const useStore = create<CafeState>()((set, get) => ({
     });
     await get().fetchOrders();
     await get().fetchTables();
+  },
+
+  // ─── Settings Actions ────────────────────────────────────────────────────────
+
+  updateSettings: async (newSettings) => {
+    try {
+      await fetch(`${API_BASE_URL}/api/settings`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cafe_name: newSettings.cafeName,
+          tax_rate: newSettings.taxRate,
+          currency: newSettings.currency,
+          enable_notifications: newSettings.enableNotifications,
+          enable_sounds: newSettings.enableSounds,
+          auto_accept_orders: newSettings.autoAcceptOrders,
+          max_tables_per_waiter: newSettings.maxTablesPerWaiter,
+          default_prep_time: newSettings.defaultPrepTime
+        })
+      });
+      set({ settings: newSettings });
+    } catch (err) {
+      console.error("updateSettings error:", err);
+    }
   },
 
   // ─── Auth Actions ────────────────────────────────────────────────────────────

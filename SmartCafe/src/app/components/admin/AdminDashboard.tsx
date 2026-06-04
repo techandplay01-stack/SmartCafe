@@ -283,7 +283,7 @@ export function AdminDashboard() {
                           borderRadius: "12px"
                         }}
                       />
-                      <Bar dataKey="revenue" fill="#6F4E37" radius={[8, 8, 0, 0]} />
+                      <Bar dataKey="revenue" fill="#6F4E37" radius={[8, 8, 0, 0]} key="weekly-revenue-bar" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -303,7 +303,7 @@ export function AdminDashboard() {
                           borderRadius: "12px"
                         }}
                       />
-                      <Bar dataKey="revenue" fill="#8B6F47" radius={[8, 8, 0, 0]} />
+                      <Bar dataKey="revenue" fill="#8B6F47" radius={[8, 8, 0, 0]} key="monthly-revenue-bar" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

@@ -104,10 +104,10 @@ export function CategoriesManagement() {
   const handleDelete = (id: string) => {
     const category = categories.find((c) => c.id === id);
     if (category && category.itemCount > 0) {
-      alert(`Cannot delete "${category.name}" because it has ${category.itemCount} items. Please reassign or delete those items first.`);
+      alert(`❌ Cannot delete "${category.name}"\n\nThis category contains ${category.itemCount} menu item${category.itemCount > 1 ? 's' : ''}.\n\nPlease reassign or delete those items first from the Menu Management section.`);
       return;
     }
-    if (confirm("Are you sure you want to delete this category?")) {
+    if (confirm(`🗑️ Delete "${category?.name}" category?\n\nThis action cannot be undone.`)) {
       setCategories((prev) => prev.filter((cat) => cat.id !== id));
     }
   };
@@ -233,28 +233,37 @@ export function CategoriesManagement() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="glass-strong rounded-2xl p-6 hover:shadow-xl transition-shadow"
+              whileHover={{ scale: 1.02, y: -4 }}
+              className="glass-strong rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 border border-transparent hover:border-coffee-brown/20"
             >
               <div className="flex items-start justify-between mb-4">
-                <div
+                <motion.div
                   className="size-16 rounded-2xl flex items-center justify-center shadow-lg"
                   style={{ backgroundColor: category.color }}
+                  whileHover={{ rotate: [0, -10, 10, -10, 0] }}
+                  transition={{ duration: 0.5 }}
                 >
                   <Tag className="size-9 text-white" />
-                </div>
+                </motion.div>
                 <div className="flex gap-2">
-                  <button
+                  <motion.button
                     onClick={() => startEdit(category)}
-                    className="p-2 hover:bg-coffee-brown/10 rounded-lg transition-colors text-coffee-brown"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="p-2.5 hover:bg-coffee-brown/10 rounded-xl transition-colors text-coffee-brown shadow-sm hover:shadow-md"
+                    title="Edit category"
                   >
-                    <Edit className="size-4" />
-                  </button>
-                  <button
+                    <Edit className="size-4.5" />
+                  </motion.button>
+                  <motion.button
                     onClick={() => handleDelete(category.id)}
-                    className="p-2 hover:bg-destructive/10 rounded-lg transition-colors text-destructive"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="p-2.5 hover:bg-red-50 rounded-xl transition-all text-red-600 shadow-sm hover:shadow-md hover:ring-2 hover:ring-red-200"
+                    title="Delete category"
                   >
-                    <Trash2 className="size-4" />
-                  </button>
+                    <Trash2 className="size-4.5" />
+                  </motion.button>
                 </div>
               </div>
 

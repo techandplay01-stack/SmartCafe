@@ -5,16 +5,18 @@ import { Coffee, Lock, ArrowLeft } from "lucide-react";
 
 export function CustomerLoginGate() {
   const navigate = useNavigate();
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simple password check - in production, this would be more secure
-    if (password === "staff2024") {
+    // Simple username/password check - in production, this would be more secure
+    if (username === "admin" && password === "staff2024") {
       navigate("/staff-login");
     } else {
       setError(true);
+      setUsername("");
       setPassword("");
       setTimeout(() => setError(false), 2000);
     }
@@ -48,7 +50,27 @@ export function CustomerLoginGate() {
         <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
           <div>
             <label className="block text-sm font-medium text-coffee-brown mb-2">
-              Staff Access Code
+              Username
+            </label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                setError(false);
+              }}
+              placeholder="Enter username"
+              className={`w-full px-4 py-3 md:py-4 glass bg-white/50 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 text-base md:text-lg font-medium transition-all ${
+                error ? "border-2 border-red-500 focus:ring-red-500 shake" : "focus:ring-coffee-brown"
+              }`}
+              required
+              autoFocus
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-coffee-brown mb-2">
+              Password
             </label>
             <input
               type="password"
@@ -57,12 +79,11 @@ export function CustomerLoginGate() {
                 setPassword(e.target.value);
                 setError(false);
               }}
-              placeholder="Enter access code"
+              placeholder="Enter password"
               className={`w-full px-4 py-3 md:py-4 glass bg-white/50 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 text-base md:text-lg font-medium transition-all ${
                 error ? "border-2 border-red-500 focus:ring-red-500 shake" : "focus:ring-coffee-brown"
               }`}
               required
-              autoFocus
             />
             {error && (
               <motion.p
@@ -70,17 +91,17 @@ export function CustomerLoginGate() {
                 animate={{ opacity: 1, y: 0 }}
                 className="text-red-500 text-sm mt-2 font-semibold"
               >
-                Invalid access code. Please try again.
+                Invalid username or password. Please try again.
               </motion.p>
             )}
             <p className="text-xs text-muted-foreground mt-2">
-              For demonstration: <span className="font-mono font-semibold">staff2024</span>
+              For demonstration - Username: <span className="font-mono font-semibold">admin</span>, Password: <span className="font-mono font-semibold">staff2024</span>
             </p>
           </div>
 
           <button
             type="submit"
-            disabled={!password.trim()}
+            disabled={!username.trim() || !password.trim()}
             className="w-full py-3 md:py-4 bg-coffee-brown text-white rounded-xl md:rounded-2xl font-bold text-base md:text-lg hover:bg-coffee-brown/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
           >
             Continue to Staff Login

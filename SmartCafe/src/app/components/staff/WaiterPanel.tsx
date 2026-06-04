@@ -1,30 +1,19 @@
 import { useState } from "react";
-import { Package, Check, Grid3x3, Search, CheckCircle, Loader2 } from "lucide-react";
+import { Package, Check, Grid3x3, Search, CheckCircle } from "lucide-react";
 import { motion } from "motion/react";
 import { useStore } from "../../store";
 
 export function WaiterPanel() {
   const { orders, updateOrderStatus, tables, freeTable } = useStore();
   const [searchQuery, setSearchQuery] = useState("");
-  const [loadingId, setLoadingId] = useState<string | null>(null);
 
-  const markAsDelivered = async (orderId: string) => {
-    setLoadingId(orderId);
-    try {
-      await updateOrderStatus(orderId, "delivered");
-    } finally {
-      setLoadingId(null);
-    }
+  const markAsDelivered = (orderId: string) => {
+    updateOrderStatus(orderId, "delivered");
   };
 
-  const makeTableAvailable = async (tableNumber: string) => {
+  const makeTableAvailable = (tableNumber: string) => {
     if (confirm(`Make Table ${tableNumber} available? This will free up the table.`)) {
-      setLoadingId("table_" + tableNumber);
-      try {
-        await freeTable(tableNumber);
-      } finally {
-        setLoadingId(null);
-      }
+      freeTable(tableNumber);
     }
   };
 
@@ -93,10 +82,10 @@ export function WaiterPanel() {
               </div>
               <button
                 onClick={() => markAsDelivered(order.id)}
-                disabled={loadingId === order.id}
-                className="w-full py-2.5 md:py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg md:rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 text-sm md:text-base disabled:opacity-70"
+                className="w-full py-2.5 md:py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg md:rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 text-sm md:text-base"
               >
-                {loadingId === order.id ? <><Loader2 className="size-4 animate-spin" /> Delivering...</> : <><Check className="size-4 md:size-5" />Mark as Delivered</>}
+                <Check className="size-4 md:size-5" />
+                Mark as Delivered
               </button>
             </motion.div>
           ))}
@@ -183,10 +172,9 @@ export function WaiterPanel() {
                     </div>
                     <button
                       onClick={() => makeTableAvailable(table.number)}
-                      disabled={loadingId === "table_" + table.number}
-                      className="px-3 md:px-4 py-1.5 md:py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2 text-xs md:text-sm disabled:opacity-70"
+                      className="px-3 md:px-4 py-1.5 md:py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2 text-xs md:text-sm"
                     >
-                      {loadingId === "table_" + table.number ? <Loader2 className="size-3 md:size-4 animate-spin" /> : <CheckCircle className="size-3 md:size-4" />}
+                      <CheckCircle className="size-3 md:size-4" />
                       Free Table
                     </button>
                   </div>

@@ -8,7 +8,6 @@ export function TableVerification() {
   const { tableNumber } = useParams();
   const navigate = useNavigate();
   const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
   const { tables, occupyTable } = useStore();
 
   const table = tables.find((t) => t.number === tableNumber);
@@ -20,10 +19,10 @@ export function TableVerification() {
           <h1 className="text-xl md:text-2xl font-bold text-red-600 mb-2">Invalid Table</h1>
           <p className="text-sm md:text-base text-muted-foreground mb-4 md:mb-6">This table number does not exist.</p>
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/menu")}
             className="px-6 py-2 bg-coffee-brown text-white rounded-full text-sm md:text-base"
           >
-            Go Home
+            Go to Menu
           </button>
         </div>
       </div>
@@ -49,16 +48,11 @@ export function TableVerification() {
     );
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim() && tableNumber) {
-      setLoading(true);
-      try {
-        await occupyTable(tableNumber, name.trim());
-        navigate(`/menu?table=${tableNumber}`);
-      } finally {
-        setLoading(false);
-      }
+      occupyTable(tableNumber, name.trim());
+      navigate(`/menu?table=${tableNumber}`);
     }
   };
 
@@ -95,10 +89,10 @@ export function TableVerification() {
 
           <button
             type="submit"
-            disabled={!name.trim() || loading}
+            disabled={!name.trim()}
             className="w-full py-3 md:py-4 bg-coffee-brown text-white rounded-xl md:rounded-2xl font-bold text-base md:text-lg hover:bg-coffee-brown/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
           >
-            {loading ? "Starting..." : "Start Ordering"}
+            Start Ordering
           </button>
         </form>
       </motion.div>

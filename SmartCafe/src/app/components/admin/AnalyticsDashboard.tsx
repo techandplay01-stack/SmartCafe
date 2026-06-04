@@ -149,7 +149,7 @@ export function AnalyticsDashboard() {
                   borderRadius: "12px",
                 }}
               />
-              <Line type="monotone" dataKey="revenue" stroke="#6F4E37" strokeWidth={3} dot={{ r: 6 }} />
+              <Line type="monotone" dataKey="revenue" stroke="#6F4E37" strokeWidth={3} dot={{ r: 6 }} key="analytics-revenue-line" />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -169,7 +169,7 @@ export function AnalyticsDashboard() {
                   borderRadius: "12px",
                 }}
               />
-              <Bar dataKey="revenue" fill="#6F4E37" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="revenue" fill="#6F4E37" radius={[8, 8, 0, 0]} key="category-revenue-bar" />
             </BarChart>
           </ResponsiveContainer>
         </div>

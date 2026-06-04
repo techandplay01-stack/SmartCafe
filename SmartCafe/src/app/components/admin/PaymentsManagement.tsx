@@ -9,13 +9,18 @@ export function PaymentsManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFilter, setDateFilter] = useState("all");
 
-  // Calculate payment stats
-  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-  const cashPayments = orders.filter((o) => o.status === "delivered").length * 0.6; // Simulating 60% cash
-  const onlinePayments = orders.filter((o) => o.status === "delivered").length * 0.4; // 40% online
+  // Calculate payment stats from actual payment methods
+  const deliveredOrders = orders.filter((o) => o.status === "delivered");
+  const totalRevenue = deliveredOrders.reduce((sum, order) => sum + order.total, 0);
 
-  const cashRevenue = totalRevenue * 0.6;
-  const onlineRevenue = totalRevenue * 0.4;
+  const cashOrders = deliveredOrders.filter((o) => o.paymentMethod === "cash");
+  const onlineOrders = deliveredOrders.filter((o) => o.paymentMethod === "razorpay");
+
+  const cashPayments = cashOrders.length;
+  const onlinePayments = onlineOrders.length;
+
+  const cashRevenue = cashOrders.reduce((sum, order) => sum + order.total, 0);
+  const onlineRevenue = onlineOrders.reduce((sum, order) => sum + order.total, 0);
 
   // Payment methods data
   const paymentMethodsData = [
@@ -23,7 +28,7 @@ export function PaymentsManagement() {
     { id: "payment-online", name: "Card/UPI", value: onlineRevenue, color: "#3B82F6" },
   ];
 
-  // Daily payments
+  // Daily payments - using actual payment methods
   const getLast7DaysPayments = () => {
     const days = [];
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -34,14 +39,21 @@ export function PaymentsManagement() {
       const dayOrders = orders.filter(
         (o) => new Date(o.createdAt).toDateString() === date.toDateString() && o.status === "delivered"
       );
-      const dayRevenue = dayOrders.reduce((sum, o) => sum + o.total, 0);
+
+      const cashDayRevenue = dayOrders
+        .filter((o) => o.paymentMethod === "cash")
+        .reduce((sum, o) => sum + o.total, 0);
+
+      const onlineDayRevenue = dayOrders
+        .filter((o) => o.paymentMethod === "razorpay")
+        .reduce((sum, o) => sum + o.total, 0);
 
       days.push({
         id: `payment-day-${i}`,
         name: dayNames[date.getDay()],
-        cash: dayRevenue * 0.6,
-        online: dayRevenue * 0.4,
-        total: dayRevenue,
+        cash: cashDayRevenue,
+        online: onlineDayRevenue,
+        total: cashDayRevenue + onlineDayRevenue,
       });
     }
 
@@ -85,7 +97,7 @@ export function PaymentsManagement() {
           order.customerName,
           order.tableNumber,
           order.total.toFixed(2),
-          Math.random() > 0.5 ? "Cash" : "Online",
+          order.paymentMethod === "cash" ? "Cash" : "Online",
         ].join(",")
       ),
     ].join("\n");
@@ -131,6 +143,7 @@ export function PaymentsManagement() {
             <span className="text-sm text-muted-foreground">Cash Payments</span>
           </div>
           <p className="text-3xl font-bold text-green-600">₹{cashRevenue.toLocaleString()}</p>
+          <p className="text-xs text-muted-foreground mt-1">{cashPayments} transactions</p>
         </div>
 
         <div className="glass-strong rounded-2xl p-6">
@@ -139,6 +152,7 @@ export function PaymentsManagement() {
             <span className="text-sm text-muted-foreground">Online Payments</span>
           </div>
           <p className="text-3xl font-bold text-blue-600">₹{onlineRevenue.toLocaleString()}</p>
+          <p className="text-xs text-muted-foreground mt-1">{onlinePayments} transactions</p>
         </div>
 
         <div className="glass-strong rounded-2xl p-6">
@@ -167,8 +181,8 @@ export function PaymentsManagement() {
                   borderRadius: "12px",
                 }}
               />
-              <Bar dataKey="cash" fill="#10B981" name="Cash" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="online" fill="#3B82F6" name="Online" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="cash" fill="#10B981" name="Cash" radius={[4, 4, 0, 0]} key="payment-cash-bar" />
+              <Bar dataKey="online" fill="#3B82F6" name="Online" radius={[4, 4, 0, 0]} key="payment-online-bar" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -258,12 +272,12 @@ export function PaymentsManagement() {
                   <td className="py-3 px-4">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        Math.random() > 0.5
+                        order.paymentMethod === "cash"
                           ? "bg-green-100 text-green-700"
                           : "bg-blue-100 text-blue-700"
                       }`}
                     >
-                      {Math.random() > 0.5 ? "Cash" : "Online"}
+                      {order.paymentMethod === "cash" ? "Cash" : "Online"}
                     </span>
                   </td>
                 </tr>

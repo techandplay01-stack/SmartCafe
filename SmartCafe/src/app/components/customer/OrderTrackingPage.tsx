@@ -21,12 +21,12 @@ export function OrderTrackingPage() {
   const order = orders.find(o => o.id === orderId);
 
   const currentStatus = order?.status || "pending";
-  const [timeRemaining, setTimeRemaining] = useState(1200);
+  const [timeRemaining, setTimeRemaining] = useState(300);
 
   // Calculate time elapsed since order was placed
   const timeElapsed = order ? Math.floor((Date.now() - order.createdAt) / 1000) : 0;
-  // Can only cancel if order is still pending (not accepted by kitchen) and within 2 minutes
-  const canCancel = order && order.status === "pending" && timeElapsed < 120; // 2 minutes = 120 seconds
+  // Can only cancel if order is still pending (not accepted by kitchen) and within 1 minute
+  const canCancel = order && order.status === "pending" && timeElapsed < 60; // 1 minute = 60 seconds
 
   const handleCancelOrder = () => {
     if (confirm("Are you sure you want to cancel this order?")) {
@@ -46,12 +46,26 @@ export function OrderTrackingPage() {
   }, [currentStatus]);
 
   useEffect(() => {
+    // Stop timer when order is delivered or ready
+    if (currentStatus === "delivered" || currentStatus === "ready") {
+      return;
+    }
+
+    // Calculate time remaining based on when order was placed (timer starts immediately)
+    let initialTime = 300;
+    if (order?.preparingStartedAt) {
+      const elapsedSincePrep = Math.floor((Date.now() - order.preparingStartedAt) / 1000);
+      initialTime = Math.max(0, 300 - elapsedSincePrep);
+    }
+    setTimeRemaining(initialTime);
+
+    // Start countdown timer
     const timer = setInterval(() => {
       setTimeRemaining((prev) => Math.max(0, prev - 1));
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [currentStatus, order?.preparingStartedAt]);
 
   const currentStepIndex = statusSteps.findIndex((step) => step.status === currentStatus);
 
@@ -97,7 +111,7 @@ export function OrderTrackingPage() {
                 Cancel Order
               </button>
               <p className="text-xs text-muted-foreground mt-2">
-                You can cancel within 2 minutes of placing the order
+                You can cancel within 1 minute of placing the order
               </p>
             </motion.div>
           )}
@@ -226,10 +240,10 @@ export function OrderTrackingPage() {
               Order Again
             </button>
             <button
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/menu")}
               className="w-full py-4 bg-white/50 glass border border-coffee-brown text-coffee-brown rounded-full font-semibold hover:bg-white/70 transition-all"
             >
-              Back to Home
+              Back to Menu
             </button>
           </motion.div>
         ) : (

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Edit, Trash2, X, Save, Search } from "lucide-react";
+import { Plus, Edit, Trash2, X, Save, Search, XCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useStore, MenuItem } from "../../store";
 
@@ -81,6 +81,24 @@ export function MenuManagement() {
   const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to delete this item?")) {
       deleteMenuItem(id);
+    }
+  };
+
+  const handleDeleteCategory = (category: string) => {
+    const itemsInCategory = menuItems.filter(item => item.category === category);
+    if (itemsInCategory.length > 0) {
+      const itemNames = itemsInCategory.map(item => `• ${item.name}`).join('\n');
+      const message = `⚠️ WARNING: This will delete the "${category}" category and ALL ${itemsInCategory.length} item(s) in it:\n\n${itemNames}\n\nThis action cannot be undone. Continue?`;
+      if (confirm(message)) {
+        itemsInCategory.forEach(item => deleteMenuItem(item.id));
+        if (selectedCategory === category) {
+          setSelectedCategory("All");
+        }
+      }
+    } else {
+      if (selectedCategory === category) {
+        setSelectedCategory("All");
+      }
     }
   };
 
@@ -286,20 +304,51 @@ export function MenuManagement() {
             />
           </div>
 
-          <div className="flex gap-2 overflow-x-auto">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-xl whitespace-nowrap transition-all ${
-                  selectedCategory === cat
-                    ? "bg-coffee-brown text-white"
-                    : "glass hover:bg-white/50"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+            {categories.map((cat) => {
+              const itemCount = cat === "All" ? menuItems.length : menuItems.filter(item => item.category === cat).length;
+              return (
+                <motion.div
+                  key={cat}
+                  className="relative group"
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                >
+                  <button
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-5 py-2.5 rounded-xl whitespace-nowrap transition-all font-medium shadow-sm flex items-center gap-2 ${
+                      selectedCategory === cat
+                        ? "bg-coffee-brown text-white shadow-lg ring-2 ring-coffee-brown/30"
+                        : "glass hover:bg-white/70 hover:shadow-md"
+                    }`}
+                  >
+                    {cat}
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                      selectedCategory === cat
+                        ? "bg-white/20"
+                        : "bg-coffee-brown/10"
+                    }`}>
+                      {itemCount}
+                    </span>
+                  </button>
+                  {cat !== "All" && (
+                    <motion.button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteCategory(cat);
+                      }}
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      whileHover={{ scale: 1.15, rotate: 90 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="absolute -top-2 -right-2 size-6 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg border-2 border-white hover:from-red-600 hover:to-red-700"
+                      title={`Delete ${cat} category (${itemCount} items)`}
+                    >
+                      <Trash2 className="size-3" />
+                    </motion.button>
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </div>
