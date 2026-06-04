@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router";
+import { useLocation, Navigate } from "react-router";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -14,7 +14,8 @@ import {
   TrendingUp,
   Clock,
   Package,
-  Tag
+  Tag,
+  LogOut
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
@@ -40,10 +41,16 @@ const menuItems = [
 
 
 export function AdminDashboard() {
-  const { orders, tables, menuItems: storeMenuItems } = useStore();
+  const { orders, tables, menuItems: storeMenuItems, auth, logout } = useStore();
   const location = useLocation();
   const [selectedMenu, setSelectedMenu] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // ── Auth Guard ───────────────────────────────────────────────────────────────
+  // If not authenticated as admin, redirect to staff login
+  if (!auth.isAuthenticated || auth.role !== "admin") {
+    return <Navigate to="/staff-login" replace />;
+  }
 
   // Check if there's an initial menu from navigation state
   useEffect(() => {
@@ -188,9 +195,18 @@ export function AdminDashboard() {
                 {menuItems.find((item) => item.path === selectedMenu)?.label || "Dashboard"}
               </h1>
             </div>
-            <div className="px-4 py-2 glass-strong rounded-full">
-              <span className="text-sm text-muted-foreground">Today: </span>
-              <span className="font-semibold text-coffee-brown">{new Date().toLocaleDateString()}</span>
+          <div className="flex items-center gap-3">
+              <div className="px-4 py-2 glass-strong rounded-full">
+                <span className="text-sm text-muted-foreground">Today: </span>
+                <span className="font-semibold text-coffee-brown">{new Date().toLocaleDateString()}</span>
+              </div>
+              <button
+                onClick={() => { logout(); window.location.href = "/staff-login"; }}
+                className="flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-full transition-colors font-semibold text-sm"
+              >
+                <LogOut className="size-4" />
+                Logout
+              </button>
             </div>
           </div>
         </div>
